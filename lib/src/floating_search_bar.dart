@@ -52,6 +52,7 @@ class FloatingSearchBar extends ImplicitlyAnimatedWidget {
     this.automaticallyImplyBackButton = true,
     this.closeOnBackdropTap = true,
     this.progress = false,
+    this.progressIndicatorHeight = 2.75,
     this.transitionDuration = const Duration(milliseconds: 500),
     this.transitionCurve = Curves.ease,
     this.debounceDelay = Duration.zero,
@@ -236,6 +237,9 @@ class FloatingSearchBar extends ImplicitlyAnimatedWidget {
   /// When `null` or `false`, will hide the [LinearProgressIndicator].
   /// {@endtemplate}
   final dynamic progress;
+
+  /// {@macro floating_search_bar.progressIndicatorHeight}
+  final double progressIndicatorHeight;
 
   /// {@template floating_search_bar.transitionDuration}
   /// The duration of the animation between opened and closed
@@ -745,6 +749,7 @@ class FloatingSearchBarState extends ImplicitlyAnimatedWidgetState<
       onQueryChanged: widget.onQueryChanged,
       onSubmitted: widget.onSubmitted,
       progress: widget.progress,
+      progressIndicatorHeight: widget.progressIndicatorHeight,
       automaticallyImplyDrawerHamburger:
           widget.automaticallyImplyDrawerHamburger,
       automaticallyImplyBackButton: widget.automaticallyImplyBackButton,
