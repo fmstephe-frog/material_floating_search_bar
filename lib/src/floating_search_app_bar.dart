@@ -765,7 +765,7 @@ class _FloatingSearchProgressBarState extends State<_FloatingSearchProgressBar>
 
   @override
   Widget build(BuildContext context) {
-    const double height = 2.75;
+    const double height = 5;
 
     final double? progressValue =
         progress is num ? (progress as num).toDouble().clamp(0.0, 1.0) : null;
