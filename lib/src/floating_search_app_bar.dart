@@ -25,6 +25,7 @@ class FloatingSearchAppBar extends ImplicitlyAnimatedWidget {
     this.padding,
     this.insets,
     this.height = 56.0,
+    this.progressIndicatorHeight = 2.75,
     this.elevation = 0.0,
     this.liftOnScrollElevation = 4.0,
     this.hintStyle,
@@ -140,6 +141,9 @@ class FloatingSearchAppBar extends ImplicitlyAnimatedWidget {
   /// {@macro floating_search_bar.progress}
   final dynamic progress;
 
+  /// {@macro floating_search_bar.progressIndicatorHeight}
+  final double progressIndicatorHeight;
+
   /// {@macro floating_search_bar.transitionDuration}
   final Duration transitionDuration;
 
@@ -195,24 +199,22 @@ class FloatingSearchAppBar extends ImplicitlyAnimatedWidget {
   FloatingSearchAppBarState createState() => FloatingSearchAppBarState();
 }
 
-class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
-    FloatingSearchAppBarStyle, FloatingSearchAppBar> {
+class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<FloatingSearchAppBarStyle, FloatingSearchAppBar> {
   final ValueNotifier<String> queryNotifer = ValueNotifier<String>('');
   final Handler _handler = Handler();
 
-  late final AnimationController controller =
-      AnimationController(vsync: this, duration: transitionDuration)
-        ..value = isAlwaysOpened ? 1.0 : 0.0
-        ..addListener(() => setState(() {}))
-        ..addStatusListener((AnimationStatus status) {
-          _setInsets();
+  late final AnimationController controller = AnimationController(vsync: this, duration: transitionDuration)
+    ..value = isAlwaysOpened ? 1.0 : 0.0
+    ..addListener(() => setState(() {}))
+    ..addStatusListener((AnimationStatus status) {
+      _setInsets();
 
-          if (status == AnimationStatus.dismissed) {
-            if (widget.clearQueryOnClose) {
-              clear();
-            }
-          }
-        });
+      if (status == AnimationStatus.dismissed) {
+        if (widget.clearQueryOnClose) {
+          clear();
+        }
+      }
+    });
 
   late CurvedAnimation transitionAnimation = CurvedAnimation(
     parent: controller,
@@ -262,29 +264,20 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
 
   bool get hasActions => actions.isNotEmpty;
   List<Widget> get actions {
-    final List<Widget> actions =
-        widget.actions ?? <Widget>[FloatingSearchBarAction.searchToClear()];
-    final bool showHamburger = widget.automaticallyImplyDrawerHamburger &&
-        Scaffold.of(context).hasEndDrawer;
-    return showHamburger
-        ? <Widget>[
-            ...actions,
-            FloatingSearchBarAction.hamburgerToBack(isLeading: false)
-          ]
-        : actions;
+    final List<Widget> actions = widget.actions ?? <Widget>[FloatingSearchBarAction.searchToClear()];
+    final bool showHamburger = widget.automaticallyImplyDrawerHamburger && Scaffold.of(context).hasEndDrawer;
+    return showHamburger ? <Widget>[...actions, FloatingSearchBarAction.hamburgerToBack(isLeading: false)] : actions;
   }
 
   bool get hasleadingActions => leadingActions.isNotEmpty;
   List<Widget> get leadingActions {
     final List<Widget> actions = widget.leadingActions ?? const <Widget>[];
-    final bool showHamburger = widget.automaticallyImplyDrawerHamburger &&
-        Scaffold.of(context).hasDrawer;
+    final bool showHamburger = widget.automaticallyImplyDrawerHamburger && Scaffold.of(context).hasDrawer;
 
     Widget? leading;
     if (showHamburger) {
       leading = FloatingSearchBarAction.hamburgerToBack();
-    } else if (widget.automaticallyImplyBackButton &&
-        (Navigator.canPop(context) || widget.body != null)) {
+    } else if (widget.automaticallyImplyBackButton && (Navigator.canPop(context) || widget.body != null)) {
       leading = FloatingSearchBarAction.back(
         showIfClosed: Navigator.canPop(context),
       );
@@ -421,19 +414,12 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
     final double height = style.height + _statusBarHeight;
     double prevPixels = 0.0;
 
-    final Brightness brightness = widget.brightness ??
-        (backgroundColor.computeLuminance() > 0.7
-            ? Brightness.light
-            : Brightness.dark);
+    final Brightness brightness = widget.brightness ?? (backgroundColor.computeLuminance() > 0.7 ? Brightness.light : Brightness.dark);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: brightness == Brightness.dark
-          ? const SystemUiOverlayStyle(
-              statusBarBrightness: Brightness.light,
-              statusBarIconBrightness: Brightness.light)
-          : const SystemUiOverlayStyle(
-              statusBarBrightness: Brightness.dark,
-              statusBarIconBrightness: Brightness.dark),
+          ? const SystemUiOverlayStyle(statusBarBrightness: Brightness.light, statusBarIconBrightness: Brightness.light)
+          : const SystemUiOverlayStyle(statusBarBrightness: Brightness.dark, statusBarIconBrightness: Brightness.dark),
       child: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification notification) {
           if (notification.metrics.axis != Axis.vertical) {
@@ -525,6 +511,7 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
         bar,
         _FloatingSearchProgressBar(
           progress: widget.progress,
+          height: widget.progressIndicatorHeight,
           color: style.accentColor,
         ),
       ],
@@ -532,8 +519,7 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
   }
 
   Widget _buildInputAndActions() {
-    final IconThemeData iconTheme =
-        Theme.of(context).iconTheme.copyWith(color: style.iconColor);
+    final IconThemeData iconTheme = Theme.of(context).iconTheme.copyWith(color: style.iconColor);
 
     return Row(
       children: <Widget>[
@@ -584,16 +570,13 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
   }
 
   Widget _buildInputField() {
-    final Animation<double> animation =
-        transitionAnimation.drive(ValleyingTween());
+    final Animation<double> animation = transitionAnimation.drive(ValleyingTween());
 
     final bool hasQuery = !widget.clearQueryOnClose && query.isNotEmpty;
-    final bool showTitle =
-        widget.title != null || (!hasQuery && query.isNotEmpty);
+    final bool showTitle = widget.title != null || (!hasQuery && query.isNotEmpty);
     final double opacity = showTitle ? animation.value : 1.0;
 
-    final bool showTextInput =
-        showTitle ? controller.value > 0.5 : controller.value > 0.0;
+    final bool showTextInput = showTitle ? controller.value > 0.5 : controller.value > 0.0;
 
     Widget input;
     if (showTextInput) {
@@ -637,9 +620,7 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
           input = DefaultTextStyle(
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).appBarTheme.toolbarTextStyle ??
-                Theme.of(context).textTheme.titleLarge ??
-                const TextStyle(),
+            style: Theme.of(context).appBarTheme.toolbarTextStyle ?? Theme.of(context).textTheme.titleLarge ?? const TextStyle(),
             child: input,
           );
         }
@@ -647,10 +628,8 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<
         final ThemeData theme = Theme.of(context);
         final TextTheme textTheme = theme.textTheme;
 
-        final TextStyle? textStyle = hasQuery
-            ? style.queryStyle ?? textTheme.titleMedium
-            : style.hintStyle ??
-                textTheme.titleMedium?.copyWith(color: theme.hintColor);
+        final TextStyle? textStyle =
+            hasQuery ? style.queryStyle ?? textTheme.titleMedium : style.hintStyle ?? textTheme.titleMedium?.copyWith(color: theme.hintColor);
 
         input = Text(
           hasQuery ? query : widget.hint ?? '',
@@ -727,17 +706,16 @@ class _FloatingSearchProgressBar extends StatefulWidget {
   const _FloatingSearchProgressBar({
     required this.progress,
     required this.color,
+    required this.height,
   });
   final dynamic progress;
   final Color color;
-
+  final double height;
   @override
-  _FloatingSearchProgressBarState createState() =>
-      _FloatingSearchProgressBarState();
+  _FloatingSearchProgressBarState createState() => _FloatingSearchProgressBarState();
 }
 
-class _FloatingSearchProgressBarState extends State<_FloatingSearchProgressBar>
-    with SingleTickerProviderStateMixin {
+class _FloatingSearchProgressBarState extends State<_FloatingSearchProgressBar> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   dynamic get progress => widget.progress;
@@ -757,24 +735,20 @@ class _FloatingSearchProgressBarState extends State<_FloatingSearchProgressBar>
   void didUpdateWidget(_FloatingSearchProgressBar oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final bool show = progress != null &&
-        (progress is num || (progress is bool && progress == true));
+    final bool show = progress != null && (progress is num || (progress is bool && progress == true));
 
     show ? _controller.forward() : _controller.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
-    const double height = 5;
-
-    final double? progressValue =
-        progress is num ? (progress as num).toDouble().clamp(0.0, 1.0) : null;
+    final double? progressValue = progress is num ? (progress as num).toDouble().clamp(0.0, 1.0) : null;
 
     if (showProgressBar) {
       return Opacity(
         opacity: _controller.value,
         child: SizedBox(
-          height: height,
+          height: widget.height,
           child: LinearProgressIndicator(
             value: progressValue,
             semanticsValue: progressValue?.toStringAsFixed(2),
@@ -784,7 +758,7 @@ class _FloatingSearchProgressBarState extends State<_FloatingSearchProgressBar>
         ),
       );
     } else {
-      return const SizedBox(height: height);
+      return SizedBox(height: widget.height);
     }
   }
 
