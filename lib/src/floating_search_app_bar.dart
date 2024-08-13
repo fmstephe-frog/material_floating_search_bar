@@ -52,6 +52,7 @@ class FloatingSearchAppBar extends ImplicitlyAnimatedWidget {
     this.controller,
     this.textInputAction = TextInputAction.search,
     this.textInputType = TextInputType.text,
+    this.textCapitalization = TextCapitalization.none,
     this.autocorrect = true,
     this.contextMenuBuilder,
     this.onKeyEvent,
@@ -182,6 +183,9 @@ class FloatingSearchAppBar extends ImplicitlyAnimatedWidget {
 
   /// {@macro floating_search_bar.textInputType}
   final TextInputType textInputType;
+
+  /// {@macro floating_search_bar.textCapitalization}
+  final TextCapitalization textCapitalization;
 
   /// {@macro floating_search_bar.autocorrect}
   final bool autocorrect;
@@ -597,6 +601,7 @@ class FloatingSearchAppBarState extends ImplicitlyAnimatedWidgetState<FloatingSe
             textInputAction: widget.textInputAction,
             keyboardType: widget.textInputType,
             onSubmitted: widget.onSubmitted,
+            textCapitalization: widget.textCapitalization,
             decoration: InputDecoration(
               isDense: true,
               hintText: widget.hint,
